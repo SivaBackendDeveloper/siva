@@ -1,0 +1,226 @@
+1.create project studentinformation(command prompt)
+
+   >>django-admin startproject studentinfopro
+
+2.create application student
+
+   >>python manage.py startapp studentapp
+
+models.py:
+---------
+from django.db import models
+from django.urls import reverse
+
+class student(models.Model):
+   name=models.CharField(max_length=128)
+   mail=models.CharField(max_length=64)
+   mobilenumber=models.IntegerField()
+   def __str__(self):
+     return self.name
+   def get_absolute_url(self):
+     return reverse('detail',kwargs={'pk':self.pk})
+
+admin.py:
+--------
+from django.contrib import admin
+from studentapp.models import student
+
+# Register your models here.
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ['name','mail','mobilenumber']
+
+admin.site.register(student,StudentAdmin)
+
+views.py:
+----------
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView
+from studentapp.models import student
+from django.urls import reverse_lazy
+
+class studentListView(ListView):
+    model=student
+
+class studentDetailView(DetailView):
+    model=student
+
+class studentCreateView(CreateView):
+ model = student
+ fields = ('name','mail','mobilenumber')
+
+class studentUpdateView(UpdateView):
+   model=student
+   fields=('name','mobilenumber')
+
+
+class studentDeleteView(DeleteView):
+   model=student
+   success_url=reverse_lazy('home')
+
+urls.py:
+--------
+from django.conf.urls import url
+from django.contrib import admin
+from django.urls import path
+from django.contrib import admin
+from django.urls import path
+
+from studentapp import views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    url(r'^$', views.studentListView.as_view(),name='home'),
+    url(r'^(?P<pk>\d+)/$', views.studentDetailView.as_view(),name='detail'),
+    url(r'^create/', views.studentCreateView.as_view(),name='create'),
+    url(r'^update/(?P<pk>\d+)/$', views.studentUpdateView.as_view(),name='update'),
+    url(r'^delete/(?P<pk>\d+)/$', views.studentDeleteView.as_view(),name='delete')
+
+]
+
+3.create template folder inside project
+4.create studentapp inside template folder
+5.inside studentapp create html files
+
+base.html:
+---------
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<title></title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7
+/css/bootstrap.min.css" integrity="sha384-
+BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+      crossorigin="anonymous">
+ </head>
+<body style="background-color:wheat;">
+<div class="container">
+{%block body_block%}
+{%endblock%}
+</div>
+</body>
+</html>
+
+student_list.html:
+-----------------
+<!DOCTYPE html>
+<style>
+    #h11{
+    color:green;
+    }
+</style>
+{%extends 'studentapp/base.html'%}
+{%block body_block%}
+
+<marquee style="background-color:lightgreen;">GLOBAL EDX</marquee><hr>
+<center>
+   <h1 id=h11>MORNING 9:30 BATCH</h1>
+   <h1 id=h11>List of All students</h1><hr>
+
+   <ol>
+   {%for student in student_list%}
+   <h2><li> <a href="/{{student.id}}">{{student.name|upper}}</a> </li></h2>
+   {%endfor%}
+   </ol>
+   {%endblock %}
+</center>
+
+student_form.html:
+------------------
+<!DOCTYPE html>
+<style>
+    #h11{
+    color:green;
+    }
+</style>
+{%extends 'studentapp/base.html'%}
+{%block body_block%}
+<marquee style="background-color:lightgreen;">GLOBAL EDX</marquee><hr>
+<center>
+<h1 id=h11>student Create Form</h1><hr>
+<form method="post">
+   {{form.as_p}}
+   {%csrf_token%}
+ <input type="submit" class='btn btn-primary btn-lg' value="Insert Record">
+ </form>
+{%endblock %}
+    </center>
+
+student_details.html:
+--------------------
+<!DOCTYPE html>
+<style>
+    #h11{
+    color:green;
+    }
+</style>
+{%extends 'studentapp/base.html'%}
+{%block body_block%}
+<marquee style="background-color:lightgreen;">GLOBAL EDX</marquee><hr>
+<center>
+<h1 id=h11>student Information</h1><hr>
+<ol>
+   <h2><li>student Name: {{student.name|upper}}</li></h2>
+   <h2><li>student mail: {{student.mail}}</li></h2>
+   <h2><li>student mobilenumber: {{student.mobilenumber}}</li></h2>
+</ol>
+<a href="/update/{{student.id}}" class='btn btn-warning'>Update</a>
+<a href="/delete/{{student.id}}" class='btn btn-warning'>Delete</a>
+{%endblock %}
+   </center>
+
+student_conform_delete.html:
+----------------------------
+<!DOCTYPE html>
+<style>
+    #h11{
+    color:green;
+    }
+</style>
+{%extends 'studentapp/base.html'%}
+{%block body_block%}
+<marquee style="background-color:lightgreen;">GLOBAL EDX</marquee><hr>
+<center>
+<h1 id=h11>Delete {{student.name}} ???</h1><hr>
+<form method="post">
+{%csrf_token%}
+<input type="submit" class='btn btn-danger' value="Delete Record">
+<a href="/" class='btn btn-success'>Cancel</a>
+</form>
+{%endblock %}
+</center>
+
+
+6.in settings add our app
+   
+setting.py:
+-------------
+    [
+     .......,
+     'studentapp'
+    ]
+
+7.we need to template directory in sttings.py
+   
+
+import os
+TEMPLATES_DIR=os.path.join(BASE_DIR,'templates')
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [TEMPLATES_DIR],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]   
+
+8.in command prompt
+   >>python manage.py makemigrations
+   >>python manage.py migrate
+   >>python manage.py runserver
