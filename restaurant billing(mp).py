@@ -9,7 +9,7 @@ def drinks():#define the drinks
         print(k,v)
     n=int(input("what do you want ="))
     total=0
-    while 1>=n<=4:
+    while n in range(1,5):
         if n==1:
             print("you are choosen coke")
             q=int(input("how many quantity you want ="))
